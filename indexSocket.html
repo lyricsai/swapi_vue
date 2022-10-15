@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <button>Send</button>
+        <script
+            src="https://cdn.socket.io/4.5.0/socket.io.min.js"
+            integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k"
+            crossorigin="anonymous"
+        ></script>
+        <script>
+            const btn = document.querySelector("button");
+            const socket = io("http://localhost:4000/");
+            socket.on("connection", () => {
+                console.log("new user");
+            });
+
+            const sendMsg = () => {
+                let msg = "some msg " + Math.random();
+                socket.emit("message", msg);
+            };
+
+            socket.emit("connect__room", { room__name: "my__rooms" });
+
+            socket.on("new__msg", (msg) => {
+                console.log(msg);
+            });
+
+            socket.on("room__msg", (msg) => {
+                console.log(msg);
+            });
+
+            btn.addEventListener("click", sendMsg);
+        </script>
+    </body>
+</html>
