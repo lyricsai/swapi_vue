@@ -15,4 +15,8 @@ export default {
     },
 };
 </script>
-<style scoped></style>
+<style scoped>
+.input {
+    line-height: 2rem;
+}
+</style>

@@ -63,23 +63,23 @@ export default defineComponent({
         },
         async getAllPlanets() {
             let { results } = await fetchData(fetchingOptions.planets);
-            this.planets = results;
+            this.planets = results.slice(0, 6);
         },
         async getAllPeople() {
             let { results } = await fetchData(fetchingOptions.people);
-            this.people = results;
+            this.people = results.slice(0, 6);
         },
         async getAllVehicles() {
             let { results } = await fetchData(fetchingOptions.vehicles);
-            this.vehicles = results;
+            this.vehicles = results.slice(0, 6);
         },
         async getAllStarships() {
             let { results } = await fetchData(fetchingOptions.starships);
-            this.starships = results;
+            this.starships = results.slice(0, 6);
         },
         async getAllSpecies() {
             let { results } = await fetchData(fetchingOptions.species);
-            this.species = results;
+            this.species = results.slice(0, 6);
         },
     },
     mounted() {
@@ -91,11 +91,6 @@ export default defineComponent({
             this.getAllSpecies(),
             this.getAllVehicles(),
         ]);
-    },
-    watch: {
-        people() {
-            console.log(this.people);
-        },
     },
 });
 </script>

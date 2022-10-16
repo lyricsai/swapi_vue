@@ -51,10 +51,15 @@ body {
 
 .wrapper {
     flex: 1 0 auto;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 a {
     text-decoration: none;
+    &:visited {
+        color: inherit;
+    }
 }
 
 ul {
@@ -62,6 +67,25 @@ ul {
     display: flex;
     flex-wrap: wrap;
 }
+
+button {
+    cursor: pointer;
+}
+
+details {
+    margin: 0 auto;
+    max-width: 400px;
+    text-align: justify;
+    & summary {
+        text-align: center;
+    }
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
 .skipLink {
     white-space: nowrap;
     margin: 1em auto;
@@ -71,6 +95,7 @@ ul {
     margin-left: -72px;
     opacity: 0;
 }
+
 .skipLink:focus {
     opacity: 1;
     background-color: white;

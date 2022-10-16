@@ -1,5 +1,5 @@
 <template>
-    <div class="nonfound">Page was not found</div>
+    <h3 class="nonfound">Page was not found</h3>
     <router-link to="/">Return Home</router-link>
 </template>
 

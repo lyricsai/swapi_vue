@@ -1,50 +1,89 @@
 <template>
-    <li v-if="show">
-        <div v-if="!items.length">
-            <p>Loading Data...</p>
-        </div>
-        <details v-else>
-            <summary>
-                <h4 class="heading4">{{ itemClass }}</h4>
-            </summary>
-            <template v-if="items?.length">
-                <ul>
-                    <li v-for="item in items" :key="item">
-                        {{ item }}
-                    </li>
-                </ul>
-            </template>
-        </details>
-    </li>
+    <span v-if="typeof links === 'string'">
+        {{ items?.name || links }}
+    </span>
+    <div v-else>
+        <h5 v-if="fetched.length">{{ itemClass }}</h5>
+        <li v-for="link in fetched" :key="link">
+            <strong>{{ link.title || link.name }}</strong>
+        </li>
+    </div>
 </template>
+
 <script>
-export default {
+import { fetchAdditionalData } from "@/services/api";
+import { defineComponent } from "@vue/runtime-core";
+
+export default defineComponent({
+    data: () => {
+        return {
+            items: [],
+            isLoading: false,
+            fetched: [],
+        };
+    },
     props: {
-        items: {
-            type: Array,
+        links: {
+            type: [Array, String],
             required: true,
         },
         itemClass: {
             type: String,
             required: true,
         },
-        show: {
-            type: Boolean,
-            required: true,
+    },
+    methods: {
+        async getItems(link) {
+            try {
+                this.isLoading = true;
+                return await fetchAdditionalData(link);
+            } catch (error) {
+                Promise.reject(error);
+            } finally {
+                this.isLoading = false;
+            }
         },
     },
-};
+    async created() {
+        if (!Array.isArray(this.links)) {
+            this.items = await this.getItems(this.links).catch((err) =>
+                Promise.reject(err)
+            );
+        } else {
+            const res = await Promise.all([
+                this.links.forEach(async (url) => {
+                    const results = await this.getItems(url).catch((err) =>
+                        Promise.reject(err)
+                    );
+                    this.fetched.push(results);
+                }),
+            ]).catch((err) => Promise.reject(err));
+            return { res };
+        }
+    },
+    watch: {
+        fetched: {
+            deep: true,
+            handler() {
+                return;
+            },
+        },
+    },
+});
 </script>
 <style scoped>
-.heading4 {
-    text-transform: capitalize;
-}
-li {
+li,
+h5 {
     padding: 0.5rem 0;
+    text-align: left;
+}
+h5 {
+    text-decoration: underline;
 }
 ul {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    border: 1px solid gray;
 }
 </style>

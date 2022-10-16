@@ -38,8 +38,6 @@ export const fetchData = async (
     }
 
     const url = fetchingData + query;
-
-    console.log(url);
     const { data } = await axios
         .get(url, {
             params: {
@@ -49,5 +47,13 @@ export const fetchData = async (
         .catch((error) => {
             return Promise.reject(error);
         });
+
+    return data;
+};
+
+export const fetchAdditionalData = async (link: string) => {
+    const { data } = await axios.get(link).catch((err) => {
+        return Promise.reject(err);
+    });
     return data;
 };

@@ -1,58 +1,61 @@
 <template>
     <header class="header">
-        <router-link to="/" class="header__logo"
-            ><div class="header__logo_container"><h2>SW-API</h2></div>
-        </router-link>
-        <div class="header__menu menu">
-            <button
-                class="icon-menu header__burger"
-                type="button"
-                @click="toggleMenu"
-                ref="iconMenu"
-            >
-                <div>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </button>
-            <nav-bar v-show="desktop || navBarVisible" />
-        </div>
-        <div class="header__actions" id="header__actions">
-            <k-button class="theme">Th</k-button>
+        <div class="container">
+            <router-link to="/" class="header__logo"
+                ><div class="header__logo_container"><h2>SW-API</h2></div>
+            </router-link>
+            <div class="header__menu menu">
+                <button
+                    class="icon-menu header__burger"
+                    type="button"
+                    @click="toggleMenu"
+                    ref="iconMenu"
+                >
+                    <div>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+                <nav-bar
+                    :show="desktop || navBarVisible"
+                    @update:show="toggleMenu"
+                />
+            </div>
         </div>
     </header>
 </template>
 
 <script>
 import NavBar from "./NavBar.vue";
-import KButton from "./ui/KButton.vue";
 
 export default {
-    components: { NavBar, KButton },
+    components: { NavBar },
     data: () => {
-        return { navBarVisible: true };
+        return { navBarVisible: false, desktop: false };
     },
     methods: {
         toggleMenu() {
             this.$refs.iconMenu.classList.toggle("_active");
-            return (this.navBarVisible = !this.navBarVisible);
+            this.navBarVisible = !this.navBarVisible;
         },
-        // resizeHandler() {
-        //     return window.innerWidth > 995 ? true : false;
-        // },
-    },
-    computed: {
-        desktop() {
-            return window.innerWidth > 995 ? true : false;
+        resizeHandler() {
+            this.navBarVisible = false;
+            if (window.innerWidth > 995) {
+                this.desktop = true;
+                this.$refs.iconMenu.classList.remove("_active");
+            } else {
+                this.desktop = false;
+            }
         },
     },
-    // mounted() {
-    //     window.addEventListener("resize", this.eventHandler);
-    // },
-    // beforeUnmount() {
-    //     window.removeEventListener("resize", this.eventHandler);
-    // },
+    mounted() {
+        window.addEventListener("resize", this.resizeHandler);
+        this.resizeHandler();
+    },
+    beforeUnmount() {
+        window.removeEventListener("resize", this.resizeHandler);
+    },
 };
 </script>
 
@@ -62,20 +65,20 @@ h1,
     color: #42b983;
     font-size: 2rem;
     transition: all 0.3s ease 0s;
-    text-align: left;
     &:hover {
         font-size: 2.3rem;
     }
 }
 .header {
-    position: relative;
-    padding: 1rem;
-    box-shadow: 2px 2px 4px gray;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     max-width: 100%;
+    box-shadow: 2px 2px 4px gray;
     margin-bottom: 1rem;
+    & .container {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
     &__actions {
         display: flex;
         justify-content: space-evenly;
@@ -93,6 +96,7 @@ h1,
 .icon-menu {
     display: none;
     @media (max-width: 995px) {
+        margin: 1rem;
         display: block;
         position: relative;
         min-width: 57px;
@@ -139,36 +143,6 @@ h1,
                 }
             }
         }
-    }
-}
-.search {
-    &__input {
-        display: none;
-        font-size: 2rem;
-        margin: 2rem;
-        border: 2px solid gray;
-        border-radius: 0.5rem;
-        width: 80%;
-        height: 3rem;
-        padding: 0 0 0 1rem;
-
-        &_container {
-            position: absolute;
-            width: 80%;
-            top: 4rem;
-            left: 10%;
-            margin: 0 auto;
-            z-index: 100;
-            background: lightgray;
-            border-radius: 0.5rem;
-        }
-    }
-}
-
-@media (max-width: 600px) {
-    .theme,
-    .search {
-        display: none;
     }
 }
 </style>

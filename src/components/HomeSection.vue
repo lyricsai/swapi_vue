@@ -1,6 +1,8 @@
 <template>
     <section :id="itemType" :tabindex="tab">
-        <h2>{{ heading }}</h2>
+        <h2>
+            {{ heading }}
+        </h2>
         <ul class="card__list" v-if="items?.length">
             <li
                 class="card__item"
@@ -8,7 +10,7 @@
                 :key="item.name ?? item.title"
             >
                 <strong>{{ item.name ?? item.title }}</strong>
-                <div>{{ item.homeworld ?? item.model }}</div>
+                <div>{{ item.birth_year ?? item.model }}</div>
                 <div>
                     <router-link
                         :to="{
@@ -23,10 +25,18 @@
             </li>
         </ul>
         <span v-else>Loading...</span>
+        <router-link
+            :to="{
+                path: `${itemType}`,
+            }"
+        >
+            See more
+        </router-link>
     </section>
 </template>
 <script>
 export default {
+    components: {},
     props: {
         itemType: {
             type: String,
@@ -47,7 +57,7 @@ export default {
 <style scoped>
 section {
     min-height: 300px;
-    margin: 0 auto;
+    margin: 2rem auto;
 }
 
 .card__list {
@@ -59,6 +69,7 @@ section {
 }
 .card__item {
     max-width: 20rem;
+    min-width: 15rem;
     min-height: 5rem;
     box-shadow: 1px 2px 4px gray;
     padding: 1rem;

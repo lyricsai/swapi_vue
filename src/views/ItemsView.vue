@@ -9,23 +9,33 @@
             @update:searchInput="(searchInput) => (searchQuery = searchInput)"
         />
     </k-dialog>
-    <k-button class="search" @click="showSearch">Search </k-button>
-    <template v-if="items?.length">
+    <k-button class="search__button" @click="showSearch">Search </k-button>
+    <template v-if="isLoading">
+        <p>Loading Data...</p>
+    </template>
+    <template v-else>
         <div class="items__info">
             <strong>{{ itemClass }}</strong> of the saga:
         </div>
         <ul>
-            <li v-for="item in items" :key="item" class="item">
-                <router-link
-                    :to="{
-                        path: `${itemClass}/${item.url.match(/\d/g).join('')}`,
-                    }"
-                >
+            <router-link
+                v-for="item in items"
+                :key="item"
+                :to="{
+                    path: `${itemClass}/${item.url.match(/\d/g).join('')}`,
+                }"
+            >
+                <li class="item">
                     <h2>{{ item.name ?? item.title }}</h2>
-                </router-link>
-            </li>
+                </li></router-link
+            >
         </ul>
         <ul class="page__wrapper">
+            <k-button
+                :disabled="page === 1"
+                @click.prevent="changePage(page - 1)"
+                >Back</k-button
+            >
             <li
                 v-for="pageNumber in totalPages"
                 :key="pageNumber"
@@ -35,10 +45,13 @@
             >
                 <k-button>{{ pageNumber }}</k-button>
             </li>
+
+            <k-button
+                :disabled="page === totalPages"
+                @click.prevent="changePage(page + 1)"
+                >Forward</k-button
+            >
         </ul>
-    </template>
-    <template v-else>
-        <p>Loading Data...</p>
     </template>
 </template>
 
@@ -53,39 +66,49 @@ export default defineComponent({
     data: () => {
         return {
             items: null,
-            isItemsLoading: false,
+            isLoading: false,
             pageNumber: 1,
             totalPages: 1,
             limit: 10,
             page: 1,
-            data: null,
             searchQuery: "",
             dialogSearchVisible: false,
         };
     },
+
     created() {
         this.searchQuery = "";
         this.getItems();
     },
+
     methods: {
         async getItems() {
-            const data = await fetchData(fetchingOptions[this.routeName], {
-                searchFor: this.searchQuery,
-                page: this.page,
-            });
+            try {
+                this.isLoading = true;
+                const data = await fetchData(fetchingOptions[this.routeName], {
+                    searchFor: this.searchQuery,
+                    page: this.page,
+                });
 
-            this.items = data.results;
-            this.data = data;
-            console.log(this.data);
-            this.totalPages = Math.ceil(data.count / this.limit);
+                this.items = data.results;
+
+                this.totalPages = Math.ceil(data.count / this.limit);
+            } catch (error) {
+                Promise.reject(error);
+            } finally {
+                this.isLoading = false;
+            }
         },
         showSearch() {
             return (this.dialogSearchVisible = true);
         },
         changePage(pageNumber) {
+            if (pageNumber < 1 || pageNumber > this.totalPages) return;
             this.page = pageNumber;
+            this.getItems();
         },
     },
+
     computed: {
         routeName() {
             return this.$route.name as string;
@@ -94,21 +117,18 @@ export default defineComponent({
             return this.routeName;
         },
     },
+
     watch: {
         routeName() {
             this.getItems();
+            this.isLoading = true;
+            this.searchQuery = "";
+            this.page = 1;
+
+            console.log(this.$route.name, this.searchQuery, this.page);
         },
-        page() {
-            this.getItems();
-        },
-        searchVisible() {
-            // this.$refs.search__input.style.display = "block";
-        },
-        searchQuery(val) {
-            // this.$nextTick(() => {
-            this.getItems();
-            console.log(val);
-            // });
+        searchQuery() {
+            if (this.searchQuery) this.getItems();
         },
     },
 });
@@ -120,6 +140,9 @@ export default defineComponent({
 }
 
 .search {
+    &__button {
+        margin: 1rem;
+    }
     &__input {
         display: none;
         font-size: 2rem;
@@ -150,12 +173,14 @@ export default defineComponent({
     max-width: 25rem;
     box-shadow: 1px -2px 4px gray;
 }
+
 ul {
     flex-wrap: wrap;
     justify-content: space-evenly;
     margin: 0 auto;
     width: 100%;
 }
+
 @media (max-width: 600px) {
     .theme,
     .search {

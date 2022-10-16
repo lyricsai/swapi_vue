@@ -16,12 +16,16 @@ export default {
     text-align: center;
     &:hover {
         background: #42b983;
-        border: none;
+        border-color: transparent;
         transition: all 0.3s ease 0s;
         color: #fff;
     }
     &:active {
-        translate: 0.5px 2px;
+        translate: 1px;
+    }
+    &:disabled {
+        background: none;
+        cursor: no-drop;
     }
 }
 </style>

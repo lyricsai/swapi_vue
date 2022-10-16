@@ -15,4 +15,5 @@ export type Person = {
     url: string;
     created: string;
     edited: string;
+    additional?: unknown;
 };

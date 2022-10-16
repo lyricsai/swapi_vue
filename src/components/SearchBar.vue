@@ -1,14 +1,14 @@
 <template>
-    <form @submit.prevent>
+    <form @submit.prevent class="search__bar">
         <label for="search__input"
             >Look for
-            <input
+            <k-input
                 type="text"
                 v-model.lazy="searchInput"
                 id="search__input"
                 placeholder="Type in.."
             />
-            <button @click.prevent="search">Search</button>
+            <k-button @click.prevent="search">Search</k-button>
         </label>
     </form>
 </template>
@@ -19,15 +19,6 @@ export default {
             searchInput: "",
         };
     },
-    // computed: {
-    //     sortedItems() {
-    //         return [...this.items].sort((item1, item2) =>
-    //             item1[this.selectedSort]?.localeCompare(
-    //                 item2[this.selectedSort]
-    //             )
-    //         );
-    //     },
-    // },
     methods: {
         search() {
             this.$emit("update:searchInput", this.searchInput);

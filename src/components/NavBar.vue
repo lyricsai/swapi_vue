@@ -1,14 +1,18 @@
 <template>
-    <nav ref="nav">
-        <router-link to="/">Home</router-link>
-        <router-link
-            class="link__name"
-            v-for="link in links"
-            :to="{ path: `/${link.name}` }"
-            :key="link.name"
-            >{{ link.name }}
-        </router-link>
-    </nav>
+    <transition name="fade">
+        <nav v-show="show">
+            <ul @click="closeNav">
+                <li><router-link to="/">Home</router-link></li>
+                <li v-for="link in links" :key="link.name">
+                    <router-link
+                        class="link__name"
+                        :to="{ path: `/${link.name}` }"
+                        >{{ link.name }}
+                    </router-link>
+                </li>
+            </ul>
+        </nav>
+    </transition>
 </template>
 
 <script>
@@ -28,41 +32,35 @@ export default {
     props: {
         show: { type: Boolean, requried: true },
     },
-    // computed: {
-    // },
-    methods: {
-        showNav() {
-            if (this.show) {
-                this.$refs.nav.style.dysplay = "block";
-            } else {
-                this.$refs.nav.style.dysplay = "none";
-            }
-            console.log(this.show);
+    computed: {
+        routeName() {
+            return this.$route.name;
         },
     },
-    mounted() {
-        this.showNav();
+    methods: {
+        closeNav() {
+            this.$emit("update:show", false);
+        },
     },
 };
 </script>
 
 <style lang="scss" scoped>
 nav {
-    display: none;
-    @media (min-width: 995px) {
-        display: block;
-        padding: 30px;
+    position: fixed;
+    background: #fff;
+    padding: 30px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 
-        a {
-            font-weight: bold;
-            color: #2c3e50;
-
-            &.router-link-exact-active {
-                color: #42b983;
-            }
-        }
+    & ul {
+        gap: 1rem;
+        flex-direction: column;
     }
     & a {
+        font-size: 1.2rem;
         &::after {
             content: " | ";
             color: #42b983;
@@ -74,9 +72,32 @@ nav {
             transition: all 0.3s ease 0s;
             color: #42b983;
         }
+        &.router-link-exact-active {
+            color: #42b983;
+        }
+    }
+
+    @media (min-width: 995px) {
+        position: static;
+        display: block;
+        padding: 30px;
+
+        & ul {
+            flex-direction: row;
+        }
     }
 }
 .link__name {
     text-transform: capitalize;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
