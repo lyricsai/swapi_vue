@@ -1,6 +1,6 @@
 <template>
     <span v-if="typeof links === 'string'">
-        {{ items?.name || links }}
+        {{ item?.name || links }}
     </span>
     <div v-else>
         <h5 v-if="fetched.length">{{ itemClass }}</h5>
@@ -17,7 +17,7 @@ import { defineComponent } from "@vue/runtime-core";
 export default defineComponent({
     data: () => {
         return {
-            items: [],
+            item: [],
             isLoading: false,
             fetched: [],
         };
@@ -46,7 +46,7 @@ export default defineComponent({
     },
     async created() {
         if (!Array.isArray(this.links)) {
-            this.items = await this.getItems(this.links).catch((err) =>
+            this.item = await this.getItems(this.links).catch((err) =>
                 Promise.reject(err)
             );
         } else {

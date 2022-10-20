@@ -52,7 +52,7 @@ import { defineComponent } from "vue";
 import { fetchData, fetchingOptions } from "@/services/api";
 import { AxiosError } from "axios";
 import { Person } from "@/models/person";
-import ItemsListItem from "@/components/ItemsListItem.vue";
+import ItemsListItem from "@/components/ListItem.vue";
 
 export default defineComponent({
     name: "PersonView",

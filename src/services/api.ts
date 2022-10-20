@@ -12,42 +12,35 @@ export const fetchingOptions = {
 };
 
 export const fetchData = async (
-    fetchingData = fetchingOptions.people,
+    itemClass = fetchingOptions.people,
     {
         id = "",
-        searchFor = "",
+        search = "",
         page = 1,
     }: {
         id?: string;
-        searchFor?: string;
-        page?: number | null;
+        search?: string;
+        page?: number;
     } = {
         id: "",
-        searchFor: "",
+        search: "",
         page: 1,
     }
 ) => {
-    let query = "";
-
-    id
-        ? (query = "/" + id)
-        : searchFor && (query = "/" + fetchingOptions.search + searchFor);
-
-    if (page === 1) {
-        page = null;
+    if (isNaN(page)) {
+        page = 1;
     }
 
-    const url = fetchingData + query;
+    let params;
+    id ? (params = {}) : (params = { search, page });
+
     const { data } = await axios
-        .get(url, {
-            params: {
-                page: page,
-            },
+        .get(itemClass + "/" + id, {
+            params: params,
         })
         .catch((error) => {
             return Promise.reject(error);
         });
-
     return data;
 };
 

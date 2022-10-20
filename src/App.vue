@@ -20,7 +20,6 @@ export default {
     components: { HeaderBar, FooterBar },
     computed: {
         routeName() {
-            console.log(this.$route.fullPath);
             return this.$route;
         },
     },
@@ -52,7 +51,7 @@ body {
 .wrapper {
     flex: 1 0 auto;
     max-width: 1000px;
-    margin: 0 auto;
+    margin: 1rem auto;
 }
 
 a {

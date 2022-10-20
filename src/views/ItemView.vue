@@ -1,8 +1,14 @@
 <template>
-    <router-link :to="{ name: itemClass }" style="text-decoration: underline"
+    <router-link
+        class="link"
+        :to="{ name: itemClass }"
+        style="text-decoration: underline"
         >Go back to {{ itemClass }}</router-link
     >
-    <template v-if="item">
+    <template v-if="!item">
+        <p>Loading Data...</p>
+    </template>
+    <template v-else>
         <div>
             <ul>
                 <li v-for="entry in Object.entries(item)" :key="entry[0]">
@@ -35,9 +41,6 @@
                 </details>
             </ul>
         </div>
-    </template>
-    <template v-else>
-        <p>Loading Data...</p>
     </template>
 </template>
 

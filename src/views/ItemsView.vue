@@ -10,48 +10,52 @@
         />
     </k-dialog>
     <k-button class="search__button" @click="showSearch">Search </k-button>
+    <k-button class="search__button" @click="resetSearchQuery">Reset </k-button>
     <template v-if="isLoading">
         <p>Loading Data...</p>
     </template>
     <template v-else>
-        <div class="items__info">
-            <strong>{{ itemClass }}</strong> of the saga:
-        </div>
-        <ul>
-            <router-link
-                v-for="item in items"
-                :key="item"
-                :to="{
-                    path: `${itemClass}/${item.url.match(/\d/g).join('')}`,
-                }"
-            >
-                <li class="item">
-                    <h2>{{ item.name ?? item.title }}</h2>
-                </li></router-link
-            >
-        </ul>
-        <ul class="page__wrapper">
-            <k-button
-                :disabled="page === 1"
-                @click.prevent="changePage(page - 1)"
-                >Back</k-button
-            >
-            <li
-                v-for="pageNumber in totalPages"
-                :key="pageNumber"
-                class="page"
-                :class="{ 'current-page': page === pageNumber }"
-                @click="changePage(pageNumber)"
-            >
-                <k-button>{{ pageNumber }}</k-button>
-            </li>
+        <div class="items__wrapper">
+            <div class="items__info">
+                <strong>{{ itemClass }}</strong> of the saga:
+            </div>
+            <div v-if="!items.length">No such data</div>
+            <ul>
+                <router-link
+                    v-for="item in items"
+                    :key="item"
+                    :to="{
+                        path: `${itemClass}/${item.url.match(/\d/g).join('')}`,
+                    }"
+                >
+                    <li class="item">
+                        <h2>{{ item.name ?? item.title }}</h2>
+                    </li></router-link
+                >
+            </ul>
+            <ul class="page__wrapper">
+                <k-button
+                    :disabled="page === 1"
+                    @click.prevent="changePage(page - 1)"
+                    >Back</k-button
+                >
+                <li
+                    v-for="pageNumber in totalPages"
+                    :key="pageNumber"
+                    class="page"
+                    :class="{ currentPage: page === pageNumber }"
+                    @click="changePage(pageNumber)"
+                >
+                    <k-button>{{ pageNumber }}</k-button>
+                </li>
 
-            <k-button
-                :disabled="page === totalPages"
-                @click.prevent="changePage(page + 1)"
-                >Forward</k-button
-            >
-        </ul>
+                <k-button
+                    :disabled="page === totalPages"
+                    @click.prevent="changePage(page + 1)"
+                    >Forward</k-button
+                >
+            </ul>
+        </div>
     </template>
 </template>
 
@@ -71,13 +75,19 @@ export default defineComponent({
             totalPages: 1,
             limit: 10,
             page: 1,
-            searchQuery: "",
+            searchQuery: "" as string | null,
             dialogSearchVisible: false,
         };
     },
 
     created() {
-        this.searchQuery = "";
+        if (!this.routeQuery.page) {
+            this.$router.push({
+                name: this.routeName,
+                query: { ...this.routeQuery, page: 1 },
+            });
+        }
+        this.page = Number(this.routeQuery.page);
         this.getItems();
     },
 
@@ -86,8 +96,8 @@ export default defineComponent({
             try {
                 this.isLoading = true;
                 const data = await fetchData(fetchingOptions[this.routeName], {
-                    searchFor: this.searchQuery,
-                    page: this.page,
+                    search: this.routeQuery.search as string,
+                    page: Number(this.routeQuery.page),
                 });
 
                 this.items = data.results;
@@ -102,10 +112,21 @@ export default defineComponent({
         showSearch() {
             return (this.dialogSearchVisible = true);
         },
+        resetSearchQuery() {
+            this.searchQuery = "";
+            this.routeHandler();
+        },
         changePage(pageNumber) {
             if (pageNumber < 1 || pageNumber > this.totalPages) return;
             this.page = pageNumber;
+            this.routeHandler();
             this.getItems();
+        },
+        routeHandler() {
+            this.$router.push({
+                path: this.routeName,
+                query: { search: this.searchQuery, page: Number(this.page) },
+            });
         },
     },
 
@@ -116,6 +137,9 @@ export default defineComponent({
         itemClass() {
             return this.routeName;
         },
+        routeQuery() {
+            return this.$route.query;
+        },
     },
 
     watch: {
@@ -124,11 +148,30 @@ export default defineComponent({
             this.isLoading = true;
             this.searchQuery = "";
             this.page = 1;
-
-            console.log(this.$route.name, this.searchQuery, this.page);
         },
         searchQuery() {
-            if (this.searchQuery) this.getItems();
+            if (this.searchQuery) {
+                this.page = 1;
+                this.$router.push({
+                    path: this.routeName,
+                    query: { search: this.searchQuery, page: this.page },
+                });
+                this.getItems();
+            }
+        },
+        routeQuery: {
+            deep: true,
+            handler() {
+                this.searchQuery = (this.routeQuery.search as string) || "";
+                this.page = Number(this.routeQuery.page) || 1;
+                this.$nextTick(() => {
+                    this.$router.push({
+                        path: this.routeName,
+                        query: { search: this.searchQuery, page: this.page },
+                    });
+                    this.getItems();
+                });
+            },
         },
     },
 });
@@ -137,6 +180,13 @@ export default defineComponent({
 <style lang="scss" scoped>
 .items__info {
     text-transform: capitalize;
+}
+
+.items__wrapper {
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .search {
@@ -181,10 +231,26 @@ ul {
     width: 100%;
 }
 
-@media (max-width: 600px) {
-    .theme,
-    .search {
+.page {
+    transition: all 0.3s ease 0s;
+    &.currentPage button {
+        background: #42b983;
+        border-color: transparent;
+        color: #fff;
+    }
+    &:hover {
+        background: #42b983;
+        color: #fff;
+        border-color: transparent;
+    }
+}
+
+@media (max-width: 800px) {
+    .page {
         display: none;
+        &.currentPage {
+            display: block;
+        }
     }
 }
 </style>

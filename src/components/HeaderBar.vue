@@ -72,7 +72,6 @@ h1,
 .header {
     max-width: 100%;
     box-shadow: 2px 2px 4px gray;
-    margin-bottom: 1rem;
     & .container {
         position: relative;
         display: flex;
