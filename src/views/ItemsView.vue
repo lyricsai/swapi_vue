@@ -102,7 +102,12 @@ export default defineComponent({
                 if (this.page !== 1) query.page = this.page;
                 if (this.searchQuery) query.search = this.searchQuery;
 
-                console.log(query, "query getItems");
+                if (query.page || query.search) {
+                    this.$router.replace({
+                        name: this.itemClass,
+                        query: query,
+                    });
+                }
 
                 const data = await fetchData(
                     fetchingOptions[this.routeName],
@@ -122,26 +127,14 @@ export default defineComponent({
             return (this.dialogSearchVisible = true);
         },
         resetSearchQuery() {
-            console.log("reset query search");
             this.searchQuery = "";
         },
         changePage(pageNumber) {
             if (pageNumber < 1 || pageNumber > this.totalPages) return;
             if (this.page === pageNumber) return;
             this.page = pageNumber;
-            console.log("change page");
         },
         checkState() {
-            console.log(
-                "checkstate",
-                history.state,
-                "routeName",
-                this.routeName,
-                "route",
-                this.routeQuery,
-                this.page
-            );
-
             this.page = Number(this.$route.query?.page) || 1;
             this.searchQuery = (this.$route.query?.search || "") as string;
         },
@@ -160,16 +153,14 @@ export default defineComponent({
     },
 
     watch: {
-        routeName(newval) {
+        routeName() {
             this.isLoading = true;
+            document.title = this.itemClass;
             this.searchQuery = "";
-            this.page = 1;
-            this.getItems();
-            document.title = this.routeName;
-            console.log(newval, "routename");
         },
         searchQuery() {
-            this.page = 1;
+            if (this.page === 1) this.getItems();
+            this.changePage(1);
         },
         page() {
             this.getItems();
