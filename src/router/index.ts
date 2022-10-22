@@ -16,6 +16,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: "/films/:id",
         name: "films-item",
+
         component: () => import("@/views/ItemView.vue"),
     },
     {

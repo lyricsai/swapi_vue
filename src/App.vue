@@ -20,7 +20,10 @@ export default {
     components: { HeaderBar, FooterBar },
     computed: {
         routeName() {
-            return this.$route;
+            return this.$route.name;
+        },
+        routePath() {
+            return this.$route.fullPath;
         },
     },
 };

@@ -14,7 +14,7 @@
     <template v-if="isLoading">
         <p>Loading Data...</p>
     </template>
-    <template v-else>
+    <template v-if="items">
         <div class="items__wrapper">
             <div class="items__info">
                 <strong>{{ itemClass }}</strong> of the saga:
@@ -33,12 +33,14 @@
                     </li></router-link
                 >
             </ul>
+
             <ul class="page__wrapper">
                 <k-button
                     :disabled="page === 1"
                     @click.prevent="changePage(page - 1)"
                     >Back</k-button
                 >
+
                 <li
                     v-for="pageNumber in totalPages"
                     :key="pageNumber"
@@ -46,9 +48,12 @@
                     :class="{ currentPage: page === pageNumber }"
                     @click="changePage(pageNumber)"
                 >
-                    <k-button>{{ pageNumber }}</k-button>
+                    <router-link
+                        :to="{ name: itemClass, query: { page: pageNumber } }"
+                    >
+                        <k-button>{{ pageNumber }}</k-button></router-link
+                    >
                 </li>
-
                 <k-button
                     :disabled="page === totalPages"
                     @click.prevent="changePage(page + 1)"
@@ -75,19 +80,15 @@ export default defineComponent({
             totalPages: 1,
             limit: 10,
             page: 1,
-            searchQuery: "" as string | null,
+            searchQuery: "",
             dialogSearchVisible: false,
         };
     },
 
-    created() {
-        if (!this.routeQuery.page) {
-            this.$router.push({
-                name: this.routeName,
-                query: { ...this.routeQuery, page: 1 },
-            });
-        }
-        this.page = Number(this.routeQuery.page);
+    mounted() {
+        window.addEventListener("popstate", this.checkState);
+        this.page = Number(this.$route.query?.page) || 1;
+        this.searchQuery = (this.$route.query?.search || "") as string;
         this.getItems();
     },
 
@@ -95,10 +96,18 @@ export default defineComponent({
         async getItems() {
             try {
                 this.isLoading = true;
-                const data = await fetchData(fetchingOptions[this.routeName], {
-                    search: this.routeQuery.search as string,
-                    page: Number(this.routeQuery.page),
-                });
+                this.items = null;
+
+                const query: { page?: number; search?: string } = {};
+                if (this.page !== 1) query.page = this.page;
+                if (this.searchQuery) query.search = this.searchQuery;
+
+                console.log(query, "query getItems");
+
+                const data = await fetchData(
+                    fetchingOptions[this.routeName],
+                    query
+                );
 
                 this.items = data.results;
 
@@ -113,20 +122,28 @@ export default defineComponent({
             return (this.dialogSearchVisible = true);
         },
         resetSearchQuery() {
+            console.log("reset query search");
             this.searchQuery = "";
-            this.routeHandler();
         },
         changePage(pageNumber) {
             if (pageNumber < 1 || pageNumber > this.totalPages) return;
+            if (this.page === pageNumber) return;
             this.page = pageNumber;
-            this.routeHandler();
-            this.getItems();
+            console.log("change page");
         },
-        routeHandler() {
-            this.$router.push({
-                path: this.routeName,
-                query: { search: this.searchQuery, page: Number(this.page) },
-            });
+        checkState() {
+            console.log(
+                "checkstate",
+                history.state,
+                "routeName",
+                this.routeName,
+                "route",
+                this.routeQuery,
+                this.page
+            );
+
+            this.page = Number(this.$route.query?.page) || 1;
+            this.searchQuery = (this.$route.query?.search || "") as string;
         },
     },
 
@@ -143,36 +160,24 @@ export default defineComponent({
     },
 
     watch: {
-        routeName() {
-            this.getItems();
+        routeName(newval) {
             this.isLoading = true;
             this.searchQuery = "";
             this.page = 1;
+            this.getItems();
+            document.title = this.routeName;
+            console.log(newval, "routename");
         },
         searchQuery() {
-            if (this.searchQuery) {
-                this.page = 1;
-                this.$router.push({
-                    path: this.routeName,
-                    query: { search: this.searchQuery, page: this.page },
-                });
-                this.getItems();
-            }
+            this.page = 1;
         },
-        routeQuery: {
-            deep: true,
-            handler() {
-                this.searchQuery = (this.routeQuery.search as string) || "";
-                this.page = Number(this.routeQuery.page) || 1;
-                this.$nextTick(() => {
-                    this.$router.push({
-                        path: this.routeName,
-                        query: { search: this.searchQuery, page: this.page },
-                    });
-                    this.getItems();
-                });
-            },
+        page() {
+            this.getItems();
         },
+    },
+
+    beforeUnmount() {
+        window.removeEventListener("popstate", this.checkState);
     },
 });
 </script>
